@@ -1,8 +1,25 @@
 import UIKit
 import PlaygroundSupport
 
+extension Array where Element: Comparable {
+    func upperBoundary(of key: Element) -> Index {
+        var low = startIndex
+        var high = endIndex
+        while low < high {
+            let mid = low + (high - low) / 2
+            if self[mid] <= key {
+                low = mid + 1
+            } else {
+                high = mid
+            }
+        }
+        
+        return low
+    }
+}
+
 final class DemoViewController: UITableViewController {
-    fileprivate var items = [1, 2, 3]
+    fileprivate var sortedItems = [1, 2, 3]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -15,20 +32,22 @@ final class DemoViewController: UITableViewController {
     
     func addNumber() {
         let number = Int(arc4random_uniform(10))
-        items.append(number)
-        items = items.sorted()
-        tableView.reloadData()
+        let insertionIndex = sortedItems.upperBoundary(of: number)
+        sortedItems.insert(number, at: insertionIndex)
+        tableView.beginUpdates()
+        tableView.insertRows(at: [IndexPath(row: insertionIndex, section: 0)], with: .automatic)
+        tableView.endUpdates()
     }
 }
 
 extension DemoViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return items.count
+        return sortedItems.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: UITableViewCell.description(), for: indexPath)
-        cell.textLabel?.text = "\(items[indexPath.row])"
+        cell.textLabel?.text = "\(sortedItems[indexPath.row])"
         return cell
     }
     
@@ -39,7 +58,7 @@ extension DemoViewController {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
         
-        items.remove(at: indexPath.row)
+        sortedItems.remove(at: indexPath.row)
         tableView.beginUpdates()
         tableView.deleteRows(at: [indexPath], with: .automatic)
         tableView.endUpdates()
