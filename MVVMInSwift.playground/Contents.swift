@@ -18,8 +18,55 @@ extension Array where Element: Comparable {
     }
 }
 
+struct State {
+    enum EditingStyle {
+        case insert(Int, IndexPath)
+        case delete(IndexPath)
+        case initialize
+    }
+    
+    var sortedItems: [Int]
+    var editingStyle: EditingStyle {
+        didSet {
+            switch editingStyle {
+            case let .insert(new, indexPath):
+                sortedItems.insert(new, at: indexPath.row)
+            case let .delete(indexPath):
+                sortedItems.remove(at: indexPath.row)
+            default:
+                break
+            }
+        }
+    }
+}
+
+final class DemoViewModel {
+    var state = State(sortedItems: [1, 2, 3], editingStyle: .initialize) {
+        didSet {
+            updateTableView(state)
+        }
+    }
+    let configureCell: (UITableViewCell, IndexPath) -> ()
+    let updateTableView: (State) -> ()
+    
+    init(configureCell: @escaping (UITableViewCell, IndexPath) -> (), updateTableView: @escaping (State) -> ()) {
+        self.configureCell = configureCell
+        self.updateTableView = updateTableView
+    }
+    
+    func addNewItem() {
+        let item = Int(arc4random_uniform(10))
+        let insertionIndex = state.sortedItems.upperBoundary(of: item)
+        state.editingStyle = .insert(item, IndexPath(row: insertionIndex, section: 0))
+    }
+    
+    func removeItem(at indexPath: IndexPath) {
+        state.editingStyle = .delete(indexPath)
+    }
+}
+
 final class DemoViewController: UITableViewController {
-    fileprivate var sortedItems = [1, 2, 3]
+    fileprivate var viewModel: DemoViewModel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,26 +75,38 @@ final class DemoViewController: UITableViewController {
         
         let addButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNumber))
         navigationItem.rightBarButtonItem = addButtonItem
+        
+        viewModel = DemoViewModel(configureCell: { [unowned self] (cell, indexPath) in
+            cell.textLabel?.text = "\(self.viewModel.state.sortedItems[indexPath.row])"
+        }, updateTableView: { [unowned self] (state) in
+            switch state.editingStyle {
+            case .initialize:
+                self.tableView.reloadData()
+            case let .insert(_, indexPath):
+                self.tableView.beginUpdates()
+                self.tableView.insertRows(at: [indexPath], with: .automatic)
+                self.tableView.endUpdates()
+            case let .delete(indexPath):
+                self.tableView.beginUpdates()
+                self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                self.tableView.endUpdates()
+            }
+        })
     }
     
     func addNumber() {
-        let number = Int(arc4random_uniform(10))
-        let insertionIndex = sortedItems.upperBoundary(of: number)
-        sortedItems.insert(number, at: insertionIndex)
-        tableView.beginUpdates()
-        tableView.insertRows(at: [IndexPath(row: insertionIndex, section: 0)], with: .automatic)
-        tableView.endUpdates()
+        viewModel.addNewItem()
     }
 }
 
 extension DemoViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sortedItems.count
+        return viewModel != nil ? viewModel.state.sortedItems.count : 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: UITableViewCell.description(), for: indexPath)
-        cell.textLabel?.text = "\(sortedItems[indexPath.row])"
+        viewModel.configureCell(cell, indexPath)
         return cell
     }
     
@@ -58,10 +117,7 @@ extension DemoViewController {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
         
-        sortedItems.remove(at: indexPath.row)
-        tableView.beginUpdates()
-        tableView.deleteRows(at: [indexPath], with: .automatic)
-        tableView.endUpdates()
+        viewModel.removeItem(at: indexPath)
     }
 }
 
