@@ -58,7 +58,7 @@ struct State {
 }
 
 final class DemoViewModel {
-    var state = State(sortedItems: [1, 2, 3]) {
+    private(set) var state = State(sortedItems: [1, 2, 3]) {
         didSet {
             callback(state)
         }
@@ -81,7 +81,7 @@ final class DemoViewModel {
 }
 
 final class DemoViewController: UITableViewController {
-    fileprivate var viewModel: DemoViewModel!
+    fileprivate var viewModel: DemoViewModel?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,18 +108,18 @@ final class DemoViewController: UITableViewController {
     }
     
     func addNumber() {
-        viewModel.addNewItem()
+        viewModel?.addNewItem()
     }
 }
 
 extension DemoViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel != nil ? viewModel.state.count : 0
+        return viewModel?.state.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: UITableViewCell.description(), for: indexPath)
-        cell.textLabel?.text = viewModel.state.text(at: indexPath)
+        cell.textLabel?.text = viewModel?.state.text(at: indexPath)
         return cell
     }
     
@@ -130,7 +130,7 @@ extension DemoViewController {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
         
-        viewModel.removeItem(at: indexPath)
+        viewModel?.removeItem(at: indexPath)
     }
 }
 
