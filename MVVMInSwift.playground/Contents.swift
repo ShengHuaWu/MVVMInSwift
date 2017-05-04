@@ -25,14 +25,14 @@ struct State {
         case none
     }
     
-    private var sortedItems: [Int]
+    private var sortedIntegers: [Int]
     var editingStyle: EditingStyle {
         didSet {
             switch editingStyle {
             case let .insert(new, indexPath):
-                sortedItems.insert(new, at: indexPath.row)
+                sortedIntegers.insert(new, at: indexPath.row)
             case let .delete(indexPath):
-                sortedItems.remove(at: indexPath.row)
+                sortedIntegers.remove(at: indexPath.row)
             default:
                 break
             }
@@ -40,25 +40,25 @@ struct State {
     }
     
     var count: Int {
-        return sortedItems.count
+        return sortedIntegers.count
     }
     
-    init(sortedItems: [Int]) {
-        self.sortedItems = sortedItems
+    init(sortedIntegers: [Int]) {
+        self.sortedIntegers = sortedIntegers
         self.editingStyle = .none
     }
     
     func text(at indexPath: IndexPath) -> String {
-        return "\(sortedItems[indexPath.row])"
+        return "\(sortedIntegers[indexPath.row])"
     }
     
     func upperBoundary(of item: Int) -> Int {
-        return sortedItems.upperBoundary(of: item)
+        return sortedIntegers.upperBoundary(of: item)
     }
 }
 
 final class DemoViewModel {
-    private(set) var state = State(sortedItems: [1, 2, 3]) {
+    private(set) var state = State(sortedIntegers: [1, 2, 3]) {
         didSet {
             callback(state)
         }
@@ -69,13 +69,13 @@ final class DemoViewModel {
         self.callback = callback
     }
     
-    func addNewItem() {
-        let item = Int(arc4random_uniform(10))
-        let insertionIndex = state.upperBoundary(of: item)
-        state.editingStyle = .insert(item, IndexPath(row: insertionIndex, section: 0))
+    func addNewInteger() {
+        let integer = Int(arc4random_uniform(10))
+        let insertionIndex = state.upperBoundary(of: integer)
+        state.editingStyle = .insert(integer, IndexPath(row: insertionIndex, section: 0))
     }
     
-    func removeItem(at indexPath: IndexPath) {
+    func removeInteger(at indexPath: IndexPath) {
         state.editingStyle = .delete(indexPath)
     }
 }
@@ -88,7 +88,7 @@ final class DemoViewController: UITableViewController {
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: UITableViewCell.description())
         
-        let addButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNumber))
+        let addButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewInteger))
         navigationItem.rightBarButtonItem = addButtonItem
         
         viewModel = DemoViewModel { [unowned self] (state) in
@@ -107,8 +107,8 @@ final class DemoViewController: UITableViewController {
         }
     }
     
-    func addNumber() {
-        viewModel?.addNewItem()
+    func addNewInteger() {
+        viewModel?.addNewInteger()
     }
 }
 
@@ -130,7 +130,7 @@ extension DemoViewController {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
         
-        viewModel?.removeItem(at: indexPath)
+        viewModel?.removeInteger(at: indexPath)
     }
 }
 
