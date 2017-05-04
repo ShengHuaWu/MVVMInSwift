@@ -22,10 +22,10 @@ struct State {
     enum EditingStyle {
         case insert(Int, IndexPath)
         case delete(IndexPath)
-        case initialize
+        case none
     }
     
-    var sortedItems: [Int]
+    private var sortedItems: [Int]
     var editingStyle: EditingStyle {
         didSet {
             switch editingStyle {
@@ -38,10 +38,27 @@ struct State {
             }
         }
     }
+    
+    var count: Int {
+        return sortedItems.count
+    }
+    
+    init(sortedItems: [Int]) {
+        self.sortedItems = sortedItems
+        self.editingStyle = .none
+    }
+    
+    func text(at indexPath: IndexPath) -> String {
+        return "\(sortedItems[indexPath.row])"
+    }
+    
+    func upperBoundary(of item: Int) -> Int {
+        return sortedItems.upperBoundary(of: item)
+    }
 }
 
 final class DemoViewModel {
-    var state = State(sortedItems: [1, 2, 3], editingStyle: .initialize) {
+    var state = State(sortedItems: [1, 2, 3]) {
         didSet {
             updateTableView(state)
         }
@@ -56,7 +73,7 @@ final class DemoViewModel {
     
     func addNewItem() {
         let item = Int(arc4random_uniform(10))
-        let insertionIndex = state.sortedItems.upperBoundary(of: item)
+        let insertionIndex = state.upperBoundary(of: item)
         state.editingStyle = .insert(item, IndexPath(row: insertionIndex, section: 0))
     }
     
@@ -77,10 +94,10 @@ final class DemoViewController: UITableViewController {
         navigationItem.rightBarButtonItem = addButtonItem
         
         viewModel = DemoViewModel(configureCell: { [unowned self] (cell, indexPath) in
-            cell.textLabel?.text = "\(self.viewModel.state.sortedItems[indexPath.row])"
+            cell.textLabel?.text = self.viewModel.state.text(at: indexPath)
         }, updateTableView: { [unowned self] (state) in
             switch state.editingStyle {
-            case .initialize:
+            case .none:
                 self.tableView.reloadData()
             case let .insert(_, indexPath):
                 self.tableView.beginUpdates()
@@ -101,7 +118,7 @@ final class DemoViewController: UITableViewController {
 
 extension DemoViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel != nil ? viewModel.state.sortedItems.count : 0
+        return viewModel != nil ? viewModel.state.count : 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
