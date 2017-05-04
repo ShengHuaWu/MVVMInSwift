@@ -60,15 +60,13 @@ struct State {
 final class DemoViewModel {
     var state = State(sortedItems: [1, 2, 3]) {
         didSet {
-            updateTableView(state)
+            callback(state)
         }
     }
-    let configureCell: (UITableViewCell, IndexPath) -> ()
-    let updateTableView: (State) -> ()
+    let callback: (State) -> ()
     
-    init(configureCell: @escaping (UITableViewCell, IndexPath) -> (), updateTableView: @escaping (State) -> ()) {
-        self.configureCell = configureCell
-        self.updateTableView = updateTableView
+    init(callback: @escaping (State) -> ()) {
+        self.callback = callback
     }
     
     func addNewItem() {
@@ -93,9 +91,7 @@ final class DemoViewController: UITableViewController {
         let addButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNumber))
         navigationItem.rightBarButtonItem = addButtonItem
         
-        viewModel = DemoViewModel(configureCell: { [unowned self] (cell, indexPath) in
-            cell.textLabel?.text = self.viewModel.state.text(at: indexPath)
-        }, updateTableView: { [unowned self] (state) in
+        viewModel = DemoViewModel { [unowned self] (state) in
             switch state.editingStyle {
             case .none:
                 self.tableView.reloadData()
@@ -108,7 +104,7 @@ final class DemoViewController: UITableViewController {
                 self.tableView.deleteRows(at: [indexPath], with: .automatic)
                 self.tableView.endUpdates()
             }
-        })
+        }
     }
     
     func addNumber() {
@@ -123,7 +119,7 @@ extension DemoViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: UITableViewCell.description(), for: indexPath)
-        viewModel.configureCell(cell, indexPath)
+        cell.textLabel?.text = viewModel.state.text(at: indexPath)
         return cell
     }
     
