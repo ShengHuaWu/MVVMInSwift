@@ -25,7 +25,7 @@ struct State {
         case none
     }
     
-    private var sortedIntegers: [Int]
+    private(set) var sortedIntegers: [Int]
     var editingStyle: EditingStyle {
         didSet {
             switch editingStyle {
@@ -39,10 +39,6 @@ struct State {
         }
     }
     
-    var count: Int {
-        return sortedIntegers.count
-    }
-    
     init(sortedIntegers: [Int]) {
         self.sortedIntegers = sortedIntegers
         self.editingStyle = .none
@@ -50,10 +46,6 @@ struct State {
     
     func text(at indexPath: IndexPath) -> String {
         return "\(sortedIntegers[indexPath.row])"
-    }
-    
-    func upperBoundary(of item: Int) -> Int {
-        return sortedIntegers.upperBoundary(of: item)
     }
 }
 
@@ -71,7 +63,7 @@ final class DemoViewModel {
     
     func addNewInteger() {
         let integer = Int(arc4random_uniform(10))
-        let insertionIndex = state.upperBoundary(of: integer)
+        let insertionIndex = state.sortedIntegers.upperBoundary(of: integer)
         state.editingStyle = .insert(integer, IndexPath(row: insertionIndex, section: 0))
     }
     
@@ -114,7 +106,7 @@ final class DemoViewController: UITableViewController {
 
 extension DemoViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel?.state.count ?? 0
+        return viewModel?.state.sortedIntegers.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
