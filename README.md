@@ -9,7 +9,9 @@ In this article, I will demonstrate how to adopt MVVM without FRP libraries.
 ### Model View Controller
 Let's get started with the standard MVC approach and the example is to display an array of sorted integers within a `UITableView`.
 In addition, we are able to insert a new integer into the correct order by clicking the add button on the top right and delete an integer by swiping a row as well.
+
 ![table-view](https://github.com/ShengHuaWu/MVVMInSwift/blob/master/Resources/tableview.png)
+
 Here, I just create a `UITableViewController` subclass called `DemoViewController` and implement the logic and `UITableViewDataSource` within it.
 ```
 final class DemoViewController: UITableViewController {
