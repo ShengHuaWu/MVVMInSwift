@@ -60,3 +60,41 @@ extension DemoViewController {
     }
 }
 ```
+
+### Model View View Model
+The first step of converting to MVVM is to create a `struct` called `State` and it stores the information related with the table view, in our case, the sorted integers.
+```
+struct State {
+    private(set) var sortedIntegers: [Int]
+
+    func text(at indexPath: IndexPath) -> String {
+        return "\(sortedIntegers[indexPath.row])"
+    }
+}
+```
+Because the table view should be updated after inserting or deleting an integer, let's write an `enum` called `EditingStyle` and it contains `insert`,  `delete` and `none` cases.
+Furthermore, we create an `editingStyle` property in `State` and update the `sortedIntegers` property with [Swift's property observers](https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/Properties.html) feature on the `editingStyle` property.
+```
+struct State {
+    enum EditingStyle {
+        case insert(Int, IndexPath)
+        case delete(IndexPath)
+        case none
+    }
+
+    var editingStyle: EditingStyle {
+        didSet {
+            switch editingStyle {
+            case let .insert(new, indexPath):
+                sortedIntegers.insert(new, at: indexPath.row)
+            case let .delete(indexPath):
+                sortedIntegers.remove(at: indexPath.row)
+            default:
+                break
+            }
+        }
+    }
+
+    // ...
+}
+```
