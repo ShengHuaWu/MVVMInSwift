@@ -1,5 +1,5 @@
 ## MVVM in Swift
-![mvvm-diagram]()
+![mvvm-diagram](https://github.com/ShengHuaWu/MVVMInSwift/blob/master/Resources/MVVM-diagram.png)
 MVVM is an augmented version of MVC architecture where we formally connect our view and controller, and move the business logic out of the controller and into the view model.
 MVVM may sound complicated, but it’s essentially a dressed-up version of the MVC architecture that you’re already familiar with.
 Generally speaking, MVVM is often combined with Functional Reactive Programming and there are a lot of FRP libraries, such as [RxSwift](https://github.com/ReactiveX/RxSwift) and [ReactiveCocoa](https://github.com/ReactiveCocoa/ReactiveCocoa).
@@ -9,7 +9,7 @@ In this article, I will demonstrate how to adopt MVVM without FRP libraries.
 ### Model View Controller
 Let's get started with the standard MVC approach and the example is to display an array of sorted integers within a `UITableView`.
 In addition, we are able to insert a new integer into the correct order by clicking the add button on the top right and delete an integer by swiping a row as well.
-![table-view]()
+![table-view](https://github.com/ShengHuaWu/MVVMInSwift/blob/master/Resources/tableview.png)
 Here, I just create a `UITableViewController` subclass called `DemoViewController` and implement the logic and `UITableViewDataSource` within it.
 ```
 final class DemoViewController: UITableViewController {
