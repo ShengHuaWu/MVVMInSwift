@@ -12,7 +12,7 @@ In addition, we are able to insert a new integer into the correct order by click
 
 ![table-view](https://github.com/ShengHuaWu/MVVMInSwift/blob/master/Resources/tableview.png)
 
-Here, I just create a `UITableViewController` subclass called `DemoViewController` and implement the logic and `UITableViewDataSource` within it.
+Here, I just create a `UITableViewController` subclass called `DemoViewController` and implement the necessary `UITableViewDataSource` methods within it. In addition, I also put the insertion logic in `addNewInteger` method and deletion logic in `tableView(_ tableView:, commit editingStyle:, forRowAt indexPath:)` method.
 ```
 final class DemoViewController: UITableViewController {
     fileprivate var sortedIntegers = [1, 2, 3]
@@ -126,7 +126,7 @@ final class DemoViewModel {
     }
 }
 ```
-Finally, we modify the code inside our view controller to hook everything up.
+Finally, we modify the code inside our view controller to hook everything up. We create a `viewModel` property and instantiate it at the end of `viewDidLoad` method in the first place.
 ```
 final class DemoViewController: UITableViewController {
     fileprivate var viewModel: DemoViewModel?
@@ -134,10 +134,7 @@ final class DemoViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: UITableViewCell.description())
-
-        let addButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewInteger))
-        navigationItem.rightBarButtonItem = addButtonItem
+        // ...
 
         viewModel = DemoViewModel { [unowned self] (state) in
             switch state.editingStyle {
@@ -154,6 +151,12 @@ final class DemoViewController: UITableViewController {
             }
         }
     }
+}
+```
+Then, we replace the previous code within `addNewInteger` and `UITableViewDataSource` methods by `DemoViewModel` methods and everything settles down.
+```
+final class DemoViewController: UITableViewController {
+    // ...
 
     func addNewInteger() {
         viewModel?.addNewInteger()
